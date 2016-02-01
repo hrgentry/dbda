@@ -1,0 +1,8 @@
+man/
+
+*\.Rdata
+*\.RData
+
+*\.txt
+
+data/*\.csv

@@ -1,0 +1,23 @@
+Package: dbda
+Type: Package
+Title: R code from Doing Bayesian Data Analysis (DBDA)
+Version: 0.1
+Date: 2016-02-01
+Author: Andrey Ziyatdinov
+Maintainer: Andrey Ziyatdinov <andrey.ziyatdinov@upc.edu>
+Description: Packaged R code from the book Doing Bayesian Data Analysis (DBDA)
+    by John K. Kruschke.
+License: MIT
+Depends:
+    coda,
+    parallel,
+    rjags,
+    runjags,
+    compute.es
+Collate:
+    'package.R'
+    'S3-classes.R'
+    'S3-methods.R'
+    'DBDA2E-utilities.R'
+    'Jags-Ydich-XnomSsubj-MbernBetaOmegaKappa.R'
+RoxygenNote: 5.0.1
