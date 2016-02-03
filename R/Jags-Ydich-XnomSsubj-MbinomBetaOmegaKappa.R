@@ -1,17 +1,18 @@
-# Jags-Ydich-XnomSsubj-MbernBetaOmegaKappa.R 
+# Jags-Ydich-XnomSsubj-MbinomBetaOmegaKappa.R 
 # Accompanies the book:
-#   Kruschke, J. K. (2014). Doing Bayesian Data Analysis: 
-#   A Tutorial with R, JAGS, and Stan. 2nd Edition. Academic Press / Elsevier.
+#   Kruschke, J. K. (2015). Doing Bayesian Data Analysis, Second Edition: 
+#   A Tutorial with R, JAGS, and Stan. Academic Press / Elsevier.
 #source("DBDA2E-utilities.R")
 #===============================================================================
 
-genMCMC.JagsYdichXnomSsubjMbernBetaOmegaKapp = function(object, data , sName="s" , yName="y" ,  
-                    numSavedSteps=50000 , saveName=NULL , thinSteps=1,
-                    kappaDist = c("Mean1", "Mode1", "Uniform"), dataList = TRUE) { 
-  kappaDist <- match.arg(kappaDist)
-  
+genMCMC.JagsYdichXnomSsubjMbinomBetaOmegaKappa = function(object, data , sName="s" , yName="y" ,  
+                    numSavedSteps=50000 , saveName=NULL , thinSteps=1 ,
+                    runjagsMethod=runjagsMethodDefault , 
+                    nChains=nChainsDefault,
+                    useRunjags = TRUE ) { 
   require(rjags)
- #-----------------------------------------------------------------------------
+  require(runjags)
+  #-----------------------------------------------------------------------------
   # THE DATA.
   # N.B.: This function expects the data to be a data frame, 
   # with one component named y being a vector of integer 0,1 values,
@@ -20,46 +21,29 @@ genMCMC.JagsYdichXnomSsubjMbernBetaOmegaKapp = function(object, data , sName="s"
   s = as.numeric(data[,sName]) # ensures consecutive integer levels
   # Do some checking that data make sense:
   if ( any( y!=0 & y!=1 ) ) { stop("All y values must be 0 or 1.") }
-  Ntotal = length(y)
+  z = aggregate( y , by=list(s) , FUN=sum )$x
+  N = aggregate( rep(1,length(y)) , by=list(s) , FUN=sum )$x
   Nsubj = length(unique(s))
   # Specify the data in a list, for later shipment to JAGS:
-  if(dataList) {
-    dataList = list(
-     y = y ,
-     s = s ,
-     Ntotal = Ntotal ,
-      Nsubj = Nsubj
-   )
-  } else {
-   dataList = list(
-     #y = y ,
-     s = s ,
-      Ntotal = Ntotal ,
-      Nsubj = Nsubj
-   )
-  }
+  dataList = list(
+    z = z ,
+    N = N ,
+    Nsubj = Nsubj
+  )
   #-----------------------------------------------------------------------------
   # THE MODEL.
-  modelString = paste("
+  modelString = "
   model {
-    for ( i in 1:Ntotal ) {
-      y[i] ~ dbern( theta[s[i]] )
+    for ( s in 1:Nsubj ) {
+      z[s] ~ dbin( theta[s] , N[s] )
+      theta[s] ~ dbeta( omega*(kappa-2)+1 , (1-omega)*(kappa-2)+1 ) 
     }
-    for ( sIdx in 1:Nsubj ) {
-      theta[sIdx] ~ dbeta( omega*(kappa-2)+1 , (1-omega)*(kappa-2)+1 ) 
-    }
-    omega ~ dbeta( 1 , 1 ) # broad uniform
-    # omega ~ dbeta( 5001 , 15001 ) # Skeptical prior for ESP
+    omega ~ dbeta( 1 , 1 )
     kappa <- kappaMinusTwo + 2
-    ", 
-    switch(kappaDist,
-      "Mean1" = "kappaMinusTwo ~ dgamma( 0.01 , 0.01 )  # mean=1 , sd=10 (generic vague)", 
-      "Mode1" = "kappaMinusTwo ~ dgamma( 1.105125 , 0.1051249 )  # mode=1 , sd=10",
-      "Uniform" = "kappaMinusTwo ~ dunif( 0.0001 , 100.0 )",
-      stop()),
-  " 
+    #kappaMinusTwo ~ dgamma( 0.01 , 0.01 )  # mean=1 , sd=10 (generic vague)
+    kappaMinusTwo ~ dgamma( 1.105125 , 0.1051249 )  # mode=1 , sd=10 
   }
-  ") # close quote for modelString
+  " # close quote for modelString
   writeLines( modelString , con="TEMPmodel.txt" )
   #-----------------------------------------------------------------------------
   # INTIALIZE THE CHAINS.
@@ -83,18 +67,35 @@ genMCMC.JagsYdichXnomSsubjMbernBetaOmegaKapp = function(object, data , sName="s"
   parameters = c( "theta","omega","kappa") # The parameters to be monitored
   adaptSteps = 500             # Number of steps to adapt the samplers
   burnInSteps = 500            # Number of steps to burn-in the chains
-  nChains = 4                  # nChains should be 2 or more for diagnostics 
-  nIter = ceiling( ( numSavedSteps * thinSteps ) / nChains )
-  # Create, initialize, and adapt the model:
-  jagsModel = jags.model( "TEMPmodel.txt" , data=dataList , inits=initsList , 
-                          n.chains=nChains , n.adapt=adaptSteps )
-  # Burn-in:
-  cat( "Burning in the MCMC chain...\n" )
-  update( jagsModel , n.iter=burnInSteps )
-  # The saved MCMC chain:
-  cat( "Sampling final MCMC chain...\n" )
-  codaSamples = coda.samples( jagsModel , variable.names=parameters , 
-                              n.iter=nIter , thin=thinSteps )
+  #useRunjags = TRUE
+  if ( useRunjags ) {
+    runJagsOut <- run.jags( method=runjagsMethod ,
+                            model="TEMPmodel.txt" , 
+                            monitor=parameters , 
+                            data=dataList ,  
+                            inits=initsList , 
+                            n.chains=nChains ,
+                            adapt=adaptSteps ,
+                            burnin=burnInSteps , 
+                            sample=ceiling(numSavedSteps/nChains) ,
+                            thin=thinSteps ,
+                            summarise=FALSE ,
+                            plots=FALSE )
+    codaSamples = as.mcmc.list( runJagsOut )
+  } else {
+    # Create, initialize, and adapt the model:
+    jagsModel = jags.model( "TEMPmodel.txt" , data=dataList , inits=initsList , 
+                            n.chains=nChains , n.adapt=adaptSteps )
+    # Burn-in:
+    cat( "Burning in the MCMC chain...\n" )
+    update( jagsModel , n.iter=burnInSteps )
+    # The saved MCMC chain:
+    cat( "Sampling final MCMC chain...\n" )
+    codaSamples = coda.samples( jagsModel , variable.names=parameters , 
+                                n.iter=ceiling(numSavedSteps*thinSteps/nChains), 
+                                thin=thinSteps )
+  }  
+  
   # resulting codaSamples object has these indices: 
   #   codaSamples[[ chainIdx ]][ stepIdx , paramIdx ]
   if ( !is.null(saveName) ) {
@@ -105,7 +106,7 @@ genMCMC.JagsYdichXnomSsubjMbernBetaOmegaKapp = function(object, data , sName="s"
 
 #===============================================================================
 
-smryMCMC.JagsYdichXnomSsubjMbernBetaOmegaKapp = function(object,  codaSamples , compVal=0.5 , rope=NULL , 
+smryMCMC.JagsYdichXnomSsubjMbinomBetaOmegaKappa = function(object,  codaSamples , compVal=0.5 , rope=NULL , 
                       diffIdVec=NULL , compValDiff=0.0 , ropeDiff=NULL , 
                       saveName=NULL ) {
   mcmcMat = as.matrix(codaSamples,chains=TRUE)
@@ -157,7 +158,7 @@ smryMCMC.JagsYdichXnomSsubjMbernBetaOmegaKapp = function(object,  codaSamples , 
 
 #===============================================================================
 
-plotMCMC.JagsYdichXnomSsubjMbernBetaOmegaKapp = function(object, codaSamples , data , sName="s" , yName="y" , 
+plotMCMC.JagsYdichXnomSsubjMbinomBetaOmegaKappa = function(object, codaSamples , data , sName="s" , yName="y" , 
                      compVal=0.5 , rope=NULL , 
                      diffIdVec=NULL , compValDiff=0.0 , ropeDiff=NULL , 
                      saveName=NULL , saveType="jpg" ) {

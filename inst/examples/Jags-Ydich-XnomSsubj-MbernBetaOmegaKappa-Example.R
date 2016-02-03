@@ -19,7 +19,7 @@ JagsYdichXnomSsubjMbernBetaOmegaKapp <- function()
   out$fileNameRoot = "Jags-Ydich-XnomSsubj-MbernBetaOmegaKappa-" 
   out$graphFileType = "eps"
   
-  out$numSavedSteps = 20000
+  out$numSavedSteps = 1000 # 20000
   out$thinSteps = 10
   
   oldClass(out) <- "JagsYdichXnomSsubjMbernBetaOmegaKapp"
@@ -43,28 +43,45 @@ mod <- JagsYdichXnomSsubjMbernBetaOmegaKapp()
 #source("Jags-Ydich-XnomSsubj-MbernBetaOmegaKappa.R")
 #------------------------------------------------------------------------------- 
 # Generate the MCMC chain:
-mcmcCoda = genMCMC(mod, data=mod$myData , sName=mod$sName , yName=mod$yName , 
-                    numSavedSteps=mod$numSavedSteps , saveName=mod$fileNameRoot , thinSteps=mod$thinSteps )
+#mcmcCoda = genMCMC(mod, data=mod$myData , sName=mod$sName , yName=mod$yName , 
+#                    numSavedSteps=mod$numSavedSteps , saveName=mod$fileNameRoot , thinSteps=mod$thinSteps )
+
+out <- genMCMC(mod, data = mod$myData, sName = mod$sName, yName = mod$yName, 
+  numSavedSteps = mod$numSavedSteps, saveName = mod$fileNameRoot, thinSteps = mod$thinSteps)
+  
 #------------------------------------------------------------------------------- 
 # Display diagnostics of chain, for specified parameters:
-parameterNames = varnames(mcmcCoda) # get all parameter names for reference
-for ( parName in parameterNames[c(1:3,length(parameterNames))] ) { 
-  diagMCMC( codaObject=mcmcCoda , parName=parName , 
-                saveName=fileNameRoot , saveType=graphFileType )
+#parameterNames = varnames(mcmcCoda) # get all parameter names for reference
+#for ( parName in parameterNames[c(1:3,length(parameterNames))] ) { 
+#  diagMCMC( codaObject=mcmcCoda , parName=parName , 
+#                saveName=fileNameRoot , saveType=graphFileType )
+#}
+
+pnames <- varnames(out)
+for(p in pnames[c(1:2, length(pnames) - 1, length(pnames))]) { 
+  diagMCMC(out, p)
 }
+
 #------------------------------------------------------------------------------- 
 # Get summary statistics of chain:
-summaryInfo = smryMCMC( mcmcCoda , compVal=0.5 , 
-                        diffIdVec=c(1,14,28),  # Therapeutic touch
-                        # diffIdVec=c(38,60,2),  # ESP Tressoldi et al.
-                        compValDiff=0.0 ,
-                        saveName=fileNameRoot )
+#summaryInfo = smryMCMC( mcmcCoda , compVal=0.5 , 
+#                        diffIdVec=c(1,14,28),  # Therapeutic touch
+#                        # diffIdVec=c(38,60,2),  # ESP Tressoldi et al.
+#                        compValDiff=0.0 ,
+#                        saveName=fileNameRoot )
+
 # Display posterior information:
-plotMCMC( mcmcCoda , data=myData , sName=sName , yName=yName , 
-          compVal=0.5 , #rope=c(0.45,0.55) , # Therapeutic touch
-          diffIdVec=c(1,14,28),              # Therapeutic touch
-          # compVal=0.25 , #rope=c(0.22,0.28) , # ESP Tressoldi et al.
-          # diffIdVec=c(38,60,2),               # ESP Tressoldi et al.
-          compValDiff=0.0, #ropeDiff = c(-0.05,0.05) ,
-          saveName=fileNameRoot , saveType=graphFileType )
+#plotMCMC( mcmcCoda , data=myData , sName=sName , yName=yName , 
+#          compVal=0.5 , #rope=c(0.45,0.55) , # Therapeutic touch
+#          diffIdVec=c(1,14,28),              # Therapeutic touch
+#          # compVal=0.25 , #rope=c(0.22,0.28) , # ESP Tressoldi et al.
+#          # diffIdVec=c(38,60,2),               # ESP Tressoldi et al.
+#          compValDiff=0.0, #ropeDiff = c(-0.05,0.05) ,
+#          saveName=fileNameRoot , saveType=graphFileType )
+
+plotMCMC(mod, out, data = mod$myData, sName = mod$sName, yName = mod$yName, 
+  compVal = 0.5 , #rope=c(0.45,0.55) , # Therapeutic touch
+  diffIdVec = c(1, 14, 28),              # Therapeutic touch
+  compValDiff = 0.0)
+
 #------------------------------------------------------------------------------- 

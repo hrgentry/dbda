@@ -20,4 +20,5 @@ Collate:
     'S3-methods.R'
     'DBDA2E-utilities.R'
     'Jags-Ydich-XnomSsubj-MbernBetaOmegaKappa.R'
+    'Jags-Ydich-XnomSsubj-MbinomBetaOmegaKappa.R'
 RoxygenNote: 5.0.1
