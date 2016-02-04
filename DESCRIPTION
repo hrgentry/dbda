@@ -8,7 +8,9 @@ Maintainer: Andrey Ziyatdinov <andrey.ziyatdinov@upc.edu>
 Description: Packaged R code from the book Doing Bayesian Data Analysis (DBDA)
     by John K. Kruschke.
 License: MIT
-Depends:
+Imports:
+    stats,
+    graphics,
     coda,
     parallel,
     rjags,
