@@ -5,3 +5,13 @@
 #' S3 class JagsYdichXnomSsubjMbinomBetaOmegaKappa.
 #' @exportClass JagsYdichXnomSsubjMbinomBetaOmegaKappa
 #
+
+#' S3 class JagsYdichXnom1subjMbernBetaModelComp.
+#' @exportClass JagsYdichXnom1subjMbernBetaModelComp
+#
+
+#' S3 class JagsYdichXnom1subjMbernBetaModelCompPseudoPrior.
+#' @exportClass JagsYdichXnom1subjMbernBetaModelCompPseudoPrior
+#
+
+

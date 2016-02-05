@@ -23,4 +23,6 @@ Collate:
     'DBDA2E-utilities.R'
     'Jags-Ydich-XnomSsubj-MbernBetaOmegaKappa.R'
     'Jags-Ydich-XnomSsubj-MbinomBetaOmegaKappa.R'
+    'Jags-Ydich-Xnom1subj-MbernBetaModelComp.R'
+    'Jags-Ydich-Xnom1subj-MbernBetaModelCompPseudoPrior.R'
 RoxygenNote: 5.0.1
