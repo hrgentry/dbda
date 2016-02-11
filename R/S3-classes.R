@@ -14,4 +14,8 @@
 #' @exportClass JagsYdichXnom1subjMbernBetaModelCompPseudoPrior
 #
 
+#' S3 class OneOddGroupModelComp2E.
+#' @exportClass OneOddGroupModelComp2E
+#
+
 
