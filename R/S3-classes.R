@@ -18,4 +18,11 @@
 #' @exportClass OneOddGroupModelComp2E
 #
 
+#------------------
+# Stan classes
+#------------------
+
+#' S3 class StanYdichXnomSsubjMbernBetaOmegaKappa.
+#' @exportClass StanYdichXnomSsubjMbernBetaOmegaKappa
+#
 

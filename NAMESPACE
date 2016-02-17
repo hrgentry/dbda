@@ -2,5 +2,6 @@
 
 export(BernBeta)
 export(genMCMC)
+export(minNforHDIpower)
 export(plotMCMC)
 export(smryMCMC)
