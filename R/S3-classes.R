@@ -18,6 +18,10 @@
 #' @exportClass OneOddGroupModelComp2E
 #
 
+#' S3 class JagsYmetXnom2grpMrobustHet.
+#' @exportClass JagsYmetXnom2grpMrobustHet
+#
+
 #------------------
 # Stan classes
 #------------------
