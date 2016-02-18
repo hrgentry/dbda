@@ -30,4 +30,5 @@ Collate:
     'Jags-Ydich-Xnom1subj-MbernBetaModelCompPseudoPrior.R'
     'Stan-Ydich-XnomSsubj-MbernBetaOmegaKappa.R'
     'Jags-Ymet-Xnom2grp-MrobustHet.R'
+    'Jags-Ydich-XmetMulti-Mlogistic.R'
 RoxygenNote: 5.0.1

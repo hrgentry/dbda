@@ -22,6 +22,10 @@
 #' @exportClass JagsYmetXnom2grpMrobustHet
 #
 
+#' S3 class JagsYdichXmetMultiMlogistic.
+#' @exportClass JagsYdichXmetMultiMlogistic
+#
+
 #------------------
 # Stan classes
 #------------------
