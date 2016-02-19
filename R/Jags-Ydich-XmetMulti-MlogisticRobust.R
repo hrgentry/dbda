@@ -1,4 +1,4 @@
-# Jags-Ydich-XmetMulti-Mlogistic.R 
+# Jags-Ydic-XmetMulti-Mlogistic.R 
 # Accompanies the book:
 #   Kruschke, J. K. (2015). Doing Bayesian Data Analysis, Second Edition: 
 #   A Tutorial with R, JAGS, and Stan. Academic Press / Elsevier.
@@ -7,14 +7,10 @@
 
 #===============================================================================
 
-genMCMC.JagsYdichXmetMultiMlogistic = function(object, data , xName="x" , yName="y" , 
+genMCMC.JagsYdichXmetMultiMlogisticRobust = function(object, data , xName="x" , yName="y" , 
                     numSavedSteps=10000 , thinSteps=1 , saveName=NULL ,
                     runjagsMethod=runjagsMethodDefault , 
-                    nChains=nChainsDefault,
-                    invlink = c("ilogit", "iprobit")) { 
-
-  invlink <- match.arh(invlink)
-  
+                    nChains=nChainsDefault ) { 
   require(runjags)
   #-----------------------------------------------------------------------------
   # THE DATA.
@@ -36,7 +32,7 @@ genMCMC.JagsYdichXmetMultiMlogistic = function(object, data , xName="x" , yName=
   )
   #-----------------------------------------------------------------------------
   # THE MODEL.
-  modelString = paste("
+  modelString = "
   # Standardize the data:
   data {
     for ( j in 1:Nx ) {
@@ -50,31 +46,24 @@ genMCMC.JagsYdichXmetMultiMlogistic = function(object, data , xName="x" , yName=
   # Specify the model for standardized data:
   model {
     for ( i in 1:Ntotal ) {
-    ",
-    switch(invlink,
-      "ilogit" = "
       # In JAGS, ilogit is logistic:
-      y[i] ~ dbern( ilogit( zbeta0 + sum( zbeta[1:Nx] * zx[i,1:Nx] ) ) )
-      ",
-      "iprobit" = "
-      y[i] ~ dbern( iprobit( zbeta0 + sum( zbeta[1:Nx] * zx[i,1:Nx] ) ) )
-      ",
-      stop()),
-    "  
+      y[i] ~ dbern( mu[i] )
+      mu[i] <- ( guess*(1/2) 
+                 + (1.0-guess)*ilogit(zbeta0+sum(zbeta[1:Nx]*zx[i,1:Nx])) )
     }
     # Priors vague on standardized scale:
     zbeta0 ~ dnorm( 0 , 1/2^2 )  
     for ( j in 1:Nx ) {
       zbeta[j] ~ dnorm( 0 , 1/2^2 )
     }
+    guess ~ dbeta(1,9)
     # Transform to original scale:
     beta[1:Nx] <- zbeta[1:Nx] / xsd[1:Nx] 
     beta0 <- zbeta0 - sum( zbeta[1:Nx] * xm[1:Nx] / xsd[1:Nx] )
   }
-  ") # close quote for modelString
+  " # close quote for modelString
   # Write out modelString to a text file
   writeLines( modelString , con="TEMPmodel.txt" )
-
   #-----------------------------------------------------------------------------
   # INTIALIZE THE CHAINS.
   # Let JAGS do it...
@@ -82,7 +71,7 @@ genMCMC.JagsYdichXmetMultiMlogistic = function(object, data , xName="x" , yName=
   #-----------------------------------------------------------------------------
   # RUN THE CHAINS
   parameters = c( "beta0" ,  "beta" ,  
-                  "zbeta0" , "zbeta" )
+                  "zbeta0" , "zbeta" , "guess" )
   adaptSteps = 500  # Number of steps to "tune" the samplers
   burnInSteps = 1000
   runJagsOut <- run.jags( method=runjagsMethod ,
@@ -108,7 +97,7 @@ genMCMC.JagsYdichXmetMultiMlogistic = function(object, data , xName="x" , yName=
 
 #===============================================================================
 
-smryMCMC.JagsYdichXmetMultiMlogistic = function(object,  codaSamples , 
+smryMCMC.JagsYdichXmetMultiMlogisticRobust = function(object,  codaSamples , 
                       saveName=NULL ) {
   summaryInfo = NULL
   mcmcMat = as.matrix(codaSamples)
@@ -125,7 +114,7 @@ smryMCMC.JagsYdichXmetMultiMlogistic = function(object,  codaSamples ,
 
 #===============================================================================
 
-plotMCMC.JagsYdichXmetMultiMlogistic = function(object, codaSamples , data , xName="x" , yName="y" ,
+plotMCMC.JagsYdichXmetMultiMlogisticRobust = function(object, codaSamples , data , xName="x" , yName="y" ,
                      showCurve=FALSE ,  pairsPlot=FALSE ,
                      saveName=NULL , saveType="jpg" ) {
   # showCurve is TRUE or FALSE and indicates whether the posterior should
@@ -137,6 +126,7 @@ plotMCMC.JagsYdichXmetMultiMlogistic = function(object, codaSamples , data , xNa
   x = as.matrix(data[,xName])
   mcmcMat = as.matrix(codaSamples,chains=TRUE)
   chainLength = NROW( mcmcMat )
+  guess = mcmcMat[,"guess"]
   zbeta0 = mcmcMat[,"zbeta0"]
   zbeta  = mcmcMat[,grep("^zbeta$|^zbeta\\[",colnames(mcmcMat))]
   if ( ncol(x)==1 ) { zbeta = matrix( zbeta , ncol=1 ) }
@@ -158,9 +148,9 @@ plotMCMC.JagsYdichXmetMultiMlogistic = function(object, codaSamples , data , xNa
       if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
       text(0.5, 0.5, txt, cex=1.5 ) # was cex=cex.cor*r
     }
-    pairs( cbind( beta0 , beta )[plotIdx,] ,
+    pairs( cbind( beta0 , beta , guess )[plotIdx,] ,
            labels=c( "beta[0]" , 
-                     paste0("beta[",1:ncol(beta),"]\n",xName) ) , 
+                     paste0("beta[",1:ncol(beta),"]\n",xName) , "guessing" ) , 
            lower.panel=panel.cor , col="skyblue" )
     if ( !is.null(saveName) ) {
       saveGraph( file=paste(saveName,"PostPairs",sep=""), type=saveType)
@@ -179,7 +169,10 @@ plotMCMC.JagsYdichXmetMultiMlogistic = function(object, codaSamples , data , xNa
     xWid=max(x)-min(x)
     xComb = seq(min(x)-0.1*xWid,max(x)+0.1*xWid,length=201)
     for ( cIdx in cVec ) {
-      lines( xComb , 1/(1+exp(-(beta0[cIdx]+beta[cIdx,1]*xComb ))) , lwd=1.5 ,
+      lines( xComb , 
+             guess[cIdx]*0.5 
+             + (1.0-guess[cIdx])*1/(1+exp(-(beta0[cIdx]+beta[cIdx,1]*xComb ))) , 
+             lwd=1.5 ,
              col="skyblue" )
       xInt = -beta0[cIdx]/beta[cIdx,1]
       arrows( xInt,0.5, xInt,-0.04, length=0.1 , col="skyblue" , lty="dashed" )
@@ -244,6 +237,9 @@ plotMCMC.JagsYdichXmetMultiMlogistic = function(object, codaSamples , data , xNa
     histInfo = plotPost( beta[,bIdx] , cex.lab = 1.75 , showCurve=showCurve ,
                          xlab=bquote(beta[.(bIdx)]) , main=xName[bIdx] )
   }
+  panelCount = decideOpenGraph( panelCount , saveName=paste0(saveName,"PostMarg") )
+  histInfo = plotPost( guess , cex.lab = 1.75 , showCurve=showCurve ,
+                       xlab=bquote("Mix. Coef.") , main="'guessing'" )
   panelCount = decideOpenGraph( panelCount , finished=TRUE , saveName=paste0(saveName,"PostMarg") )
   
   # Standardized scale:
