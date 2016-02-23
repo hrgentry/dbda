@@ -30,6 +30,10 @@
 #' @exportClass JagsYdichXmetMultiMlogisticRobust
 #
 
+#' S3 class JagsYordXmetMultiMnormal.
+#' @exportClass JagsYordXmetMultiMnormal
+#
+
 #------------------
 # Stan classes
 #------------------

@@ -32,4 +32,5 @@ Collate:
     'Jags-Ymet-Xnom2grp-MrobustHet.R'
     'Jags-Ydich-XmetMulti-Mlogistic.R'
     'Jags-Ydich-XmetMulti-MlogisticRobust.R'
+    'Jags-Yord-XmetMulti-Mnormal.R'
 RoxygenNote: 5.0.1

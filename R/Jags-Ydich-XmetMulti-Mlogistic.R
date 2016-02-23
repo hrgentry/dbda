@@ -13,7 +13,7 @@ genMCMC.JagsYdichXmetMultiMlogistic = function(object, data , xName="x" , yName=
                     nChains=nChainsDefault,
                     invlink = c("ilogit", "iprobit")) { 
 
-  invlink <- match.arh(invlink)
+  invlink <- match.arg(invlink)
   
   require(runjags)
   #-----------------------------------------------------------------------------
@@ -57,7 +57,7 @@ genMCMC.JagsYdichXmetMultiMlogistic = function(object, data , xName="x" , yName=
       y[i] ~ dbern( ilogit( zbeta0 + sum( zbeta[1:Nx] * zx[i,1:Nx] ) ) )
       ",
       "iprobit" = "
-      y[i] ~ dbern( iprobit( zbeta0 + sum( zbeta[1:Nx] * zx[i,1:Nx] ) ) )
+      y[i] ~ dbern( phi( zbeta0 + sum( zbeta[1:Nx] * zx[i,1:Nx] ) ) )
       ",
       stop()),
     "  
