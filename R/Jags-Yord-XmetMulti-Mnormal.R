@@ -292,8 +292,8 @@ plotMCMC.JagsYordXmetMultiMnormal = function(object, codaSamples , data , xName=
     # If finishing a set:
     if ( finished==TRUE ) {
       if ( !is.null(saveName) ) {
-        saveGraph( file=paste0(saveName,ceiling((panelCount-1)/(nRow*nCol))), 
-                   type=saveType)
+        #saveGraph( file=paste0(saveName,ceiling((panelCount-1)/(nRow*nCol))), 
+        #           type=saveType)
       }
       panelCount = 1 # re-set panelCount
       return(panelCount)
@@ -302,8 +302,8 @@ plotMCMC.JagsYordXmetMultiMnormal = function(object, codaSamples , data , xName=
       if ( ( panelCount %% (nRow*nCol) ) == 1 ) {
         # If previous graph was open, save previous one:
         if ( panelCount>1 & !is.null(saveName) ) {
-          saveGraph( file=paste0(saveName,(panelCount%/%(nRow*nCol))), 
-                     type=saveType)
+          #saveGraph( file=paste0(saveName,(panelCount%/%(nRow*nCol))), 
+          #           type=saveType)
         }
         # Open new graph
         openGraph(width=nCol*7.0/3,height=nRow*2.0)
