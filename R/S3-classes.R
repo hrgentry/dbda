@@ -34,6 +34,10 @@
 #' @exportClass JagsYordXmetMultiMnormal
 #
 
+#' S3 class JagsYdichXmetMultiMznormal.
+#' @exportClass JagsYdichXmetMultiMznormal
+#
+
 #------------------
 # Stan classes
 #------------------
