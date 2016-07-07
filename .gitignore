@@ -4,5 +4,6 @@ man/
 *\.RData
 
 *\.txt
+*\.eps
 
 data/*\.csv
